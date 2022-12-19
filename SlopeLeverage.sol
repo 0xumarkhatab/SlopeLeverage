@@ -27,13 +27,13 @@ contract SlopeLeverage is ERC20Burnable{
     }
 //1000000000000000000
 //2000000000000000000
-    function BuyToken()public payable{
+    function buyToken()public payable{
         require(msg.value>=getTokenPrice(),"Insufficient Funds for purchasing token");
         _mint(msg.sender, 10**18);
         tokenNumber++;
 
     }
-    function SellToken()public payable{
+    function sellToken()public payable{
         require(balanceOf(msg.sender)>0,"You do not have tokens to sell");
         tokenNumber--;
         uint tokenPrice=getTokenPrice();
