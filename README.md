@@ -32,7 +32,16 @@ This is a Fullstack Dapp that utilizes following stack
     
 
 ## Tutorial ( How to make one ? )
-To be added soon.
+This tutorial will guide you how to build a Slope Leverage app by yourself.
+
+### Pre-requisite
+
+-   Install VSCode
+-   Install and Configure Metamask
+-   Install Node JS
+-   Basic understanding of how a React or Next JS work
+
+
 
 ## Deployment Address
 
