@@ -3,7 +3,6 @@ pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
-// 1,100000000000000000
 
 contract SlopeLeverage is ERC20Burnable {
     uint256 public slope;
@@ -26,8 +25,6 @@ contract SlopeLeverage is ERC20Burnable {
         return tokenPrice;
     }
 
-    //1000000000000000000
-    //2000000000000000000
     function buyToken() public payable {
         require(
             msg.value >= getTokenPrice(),
