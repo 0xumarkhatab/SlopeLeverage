@@ -17,11 +17,39 @@ import {
 } from "@chakra-ui/react";
 
 import Head from "next/head";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ethers } from "ethers";
 import { contractAddress, abi } from "../components/SmartContract";
 import { parseEther } from "ethers/lib/utils";
-import { sign } from "crypto";
+import { createCipheriv, sign } from "crypto";
+
+async function getFeesForMumbai() {
+  // get max fees from gas station
+  let maxFeePerGas = ethers.BigNumber.from(40000000000); // fallback to 40 gwei
+  let maxPriorityFeePerGas = ethers.BigNumber.from(40000000000); // fallback to 40 gwei
+  try {
+    const { data } = await axios({
+      method: "get",
+      url: "https://gasstation-mumbai.matic.today/v2",
+    });
+    const marginalFee = ethers.BigNumber.from(40000000000);
+    maxFeePerGas = ethers.utils.parseUnits(
+      Math.ceil(data.fast.maxFee) + marginalFee + "",
+      "gwei"
+    );
+    maxPriorityFeePerGas = ethers.utils.parseUnits(
+      Math.ceil(data.fast.maxPriorityFee) + marginalFee + "",
+      "gwei"
+    );
+  } catch {
+    // ignore
+  }
+
+  return {
+    maxFeePerGas,
+    maxPriorityFeePerGas,
+  };
+}
 
 async function connectWallet() {
   let ethProvider = await window.ethereum;
@@ -43,6 +71,7 @@ async function connectWallet() {
 
 async function getContract(setter) {
   let signer = await connectWallet();
+  if (!signer) return;
   let contract = new ethers.Contract(contractAddress, abi, signer);
   if (setter) setter(contract);
   return contract;
@@ -52,7 +81,7 @@ function Portal() {
   const [balance, setBalance] = useState(null);
   const [connectedAddress, setConnectAddress] = useState(null);
   const [contract, setContract] = useState(null);
-  const [contractAllowance, setContractAllowance] = useState(0);
+  const contractAllowance = useRef(0);
   const [alertUser, setAlertUser] = useState(null);
 
   async function getTokenPrice() {
@@ -60,20 +89,26 @@ function Portal() {
       await getContract(setContract);
       return null;
     }
-
-    let Price = await contract.getTokenPrice();
-    Price = parseFloat(Price / parseEther("1"), 3).toString();
-    setCurrentTokenPrice(Price);
+    try {
+      let Price = await contract.getTokenPrice();
+      Price = parseFloat(Price / parseEther("1"), 3).toString();
+      setCurrentTokenPrice(Price);
+    } catch (e) {
+      console.log(e);
+    }
   }
   async function updateBalance() {
     if (!contract) {
       await getContract(setContract);
       return null;
     }
-
-    let balance = await contract.balanceOf(connectedAddress);
-    balance = parseInt(balance);
-    setBalance(balance);
+    try {
+      let balance = await contract.balanceOf(connectedAddress);
+      balance = parseInt(balance);
+      setBalance(balance);
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   async function getContractAllowance() {
@@ -81,11 +116,18 @@ function Portal() {
       await getContract(setContract);
       return null;
     }
-    let allowance = await contract.allowance(connectedAddress, contractAddress);
-    setContractAllowance(parseInt(allowance));
+    try {
+      let allowance = await contract.allowance(
+        connectedAddress,
+        contractAddress
+      );
+      contractAllowance.current = parseInt(allowance);
+    } catch (e) {
+      console.log(e);
+    }
   }
 
-  async function increaseContractAllowance() {
+  async function ApprovePlatform() {
     setAlertUser({
       type: "info",
       message: "Allowing Smart contract to trade the Tokens !",
@@ -95,12 +137,20 @@ function Portal() {
       return null;
     }
     console.log("approve");
-    let tx = await contract.approve(contractAddress, 1);
+    let feeObject = await getFeesForMumbai();
+    let tx = await contract.approve(contractAddress, 1, feeObject);
     console.log({ tx });
     setAlertUser({
-      type: "success",
-      message: "Platform has been guarenteed the access ! 🎉",
+      type: "warning",
+      message: "Approving Platform, Just a second :) ",
     });
+    contractAllowance.current = 1;
+    setAlertUser({
+        type: "success",
+        message: "Platform has been guarenteed the access ! 🎉\nSell after 3 seconds",
+      });
+    vanishAlert();
+    
   }
 
   async function handleBuy() {
@@ -110,23 +160,39 @@ function Portal() {
     }
 
     try {
+      setAlertUser({
+        type: "info",
+        message: "Please sign the Transaction!",
+      });
+
+      let feeObject = await getFeesForMumbai();
+
       let response = await contract.buyToken({
         value: ethers.utils.parseEther(currentTokenPrice.toString()),
+        maxFeePerGas: feeObject.maxFeePerGas,
+        maxPriorityFeePerGas: feeObject.maxPriorityFeePerGas,
+      });
+      setAlertUser({
+        type: "info",
+        message: "Waiting for Blockchain confirmation for your ownership",
       });
 
       await response.wait();
+      await getTokenPrice();
+      await updateBalance();
+
       setAlertUser({
         type: "success",
         message: "Token Purchased Successfully 🎉",
       });
-
-      getTokenPrice();
-      updateBalance();
+      vanishAlert();
     } catch (e) {
+      console.log(e);
       setAlertUser({
         type: "error",
         message: "Transaction Un-Successful :/ ",
       });
+      vanishAlert();
     }
   }
   async function handleSell() {
@@ -136,31 +202,55 @@ function Portal() {
     }
 
     try {
-      if (!contractAllowance) {
+      console.log({contractAllowance});
+      if (contractAllowance.current === 0) {
         setAlertUser({
           type: "warning",
           message: "Allow Platform to trade your tokens first!",
         });
-        await increaseContractAllowance();
+        await ApprovePlatform();
+        vanishAlert();
         return null;
       }
-      let response = await contract.sellToken({
-        gasLimit: parseEther("0.0001"),
-        value: 0,
+      setAlertUser({
+        type: "warning",
+        message: "Please sign the transaction !",
       });
-      console.log({ response });
+
+      let feeObject = await getFeesForMumbai();
+
+      let response = await contract.sellToken({
+        value: ethers.utils.parseEther("0"),
+        maxFeePerGas: feeObject.maxFeePerGas,
+        maxPriorityFeePerGas: feeObject.maxPriorityFeePerGas,
+      });
+      setAlertUser({
+        type: "info",
+        message: "Waiting for transaction completion!",
+      });
+
+      await response.wait();
+      await getTokenPrice();
+      await updateBalance();
       setAlertUser({
         type: "success",
         message: "Token Sold Successfully 🎉",
       });
-      getTokenPrice();
-      updateBalance();
+      vanishAlert();
     } catch (e) {
       console.log(e);
-      alert("Transaction Un-Successful ! ");
+      setAlertUser({
+        type: "error",
+        message: "Transaction Un-Successful :/",
+      });
     }
   }
 
+  async function vanishAlert() {
+    setTimeout(() => {
+      setAlertUser(null);
+    }, 3000);
+  }
   async function connect() {
     let signer = await connectWallet();
     if (signer == 1) {
@@ -176,10 +266,14 @@ function Portal() {
     if (!connectedAddress) {
       connect();
     } else {
-      getContract(setContract);
-      updateBalance();
-      getTokenPrice();
-      getContractAllowance();
+      try {
+        getContract(setContract);
+        updateBalance();
+        getTokenPrice();
+        getContractAllowance();
+      } catch (e) {
+        console.log(e);
+      }
     }
   }, [connectedAddress, contract]);
 
@@ -250,7 +344,7 @@ function Portal() {
 
       {alertUser && (
         <Fade in={alertUser != null}>
-          <Box position={"absolute"} top={"0"} left={"0"}>
+          <Box position={"absolute"} top={"0"} right={"0"}>
             <Alert status={alertUser.type} variant="solid">
               <AlertIcon />
               {alertUser.message}
