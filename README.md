@@ -41,6 +41,24 @@ This tutorial will guide you how to build a Slope Leverage app by yourself.
 -   Install Node JS
 -   Basic understanding of how a React or Next JS work
 
+With all set , let's start it up.
+
+#### Creating a Next App
+
+First of all We need a `Next Js app` in which we will do everything at our own !
+so 
+
+        Create a new folder
+        Open that in VScode
+        Open your terminal by pressing ``` CTRL + ` ``` on your keyboard
+        write "npx create-next-app slope_leverage" in the terminal
+        Allow ( tap "y" ) for every step except installing Typescript , we will just be working in javascript.
+        Let everything install.
+        Test the demo app by writing ` npm run dev ` in the terminal.
+        Visit localhost:3000 and you can see the demo app running.
+        Congratulations for setting up the app 🎉
+        
+
 
 
 ## Deployment Address
