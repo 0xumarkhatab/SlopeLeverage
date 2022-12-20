@@ -58,6 +58,32 @@ so
         Visit localhost:3000 and you can see the demo app running.
         Congratulations for setting up the app 🎉
         
+#### Cleaning the app
+In the the `pages` directory , open `index.js` file and remove everything in the body of Home after return statement. <br/>
+So your `index.js` will look something like this 
+
+
+```javascript
+
+export default function Home() {
+  return (
+    <>
+    
+    </>
+  )
+}
+
+```
+
+Now Let's write a heading of our favourite starter `hello world` as 
+
+```javascript
+<h1>Hello World</h1> 
+
+```
+
+Navigate to localhost:3000 and see if you can see the Hello world. <br/>
+If you can , great , you have completed the second step and we will move forward 
 
 
 
