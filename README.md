@@ -35,6 +35,5 @@ This is a Fullstack Dapp that utilizes following stack
 To be added soon.
 
 ## Deployment Address
-To be added soon.
 
-
+https://slope-leverage.vercel.app/
