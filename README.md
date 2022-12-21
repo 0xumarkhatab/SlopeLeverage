@@ -166,7 +166,8 @@ Here we are declaring our smart contract with a name , and declaring some variab
 For Understanding these variables , let's understand the important concept of `Linear Bonding curve`  <br/>
 
 ### Linear Bonding Curve
-![Linear Bonding Curve](https://miro.medium.com/max/1200/0*O0yrtS3ZuLr6HrTY)
+
+![bonding curve_1](https://user-images.githubusercontent.com/71306738/208885229-a614b945-afac-4890-b2a2-4e8764312812.png)
 
 This image illustrates the process by which the price of tokens increases as more tokens are created.
 
