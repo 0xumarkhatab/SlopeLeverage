@@ -315,7 +315,40 @@ That's what `_spendAllowance` function does.
 
 
 Then we do burn the token and send the payment to the user / owner of the token.
-        
+
+
+#### Deployment
+
+Now hit `CTRL+S` in Remix , and click on compile `SlopeLeverage.sol` in the left bar of the Remix IDE. <br/> 
+
+![image](https://user-images.githubusercontent.com/71306738/208867643-daf9539d-9770-43af-855e-6ec6d8e9cb37.png)
+
+In the image , from the position `1`, select `injected provider` which is metamask for us. <br/>
+
+Click on position `3` which is an Ethereum Icon for denoting deployment , this will open up a space like this :
+
+![image](https://user-images.githubusercontent.com/71306738/208868402-509b2a3b-aa89-405b-97b5-f7d631ee51d8.png)
+
+Now Next to deploy button , we have to pass two parameters to the contract , slope and base fee , remember from constructor
+
+![image](https://user-images.githubusercontent.com/71306738/208868644-c8b1955a-62e1-44a7-8bdf-e9c802d35087.png)
+
+Like this 
+![image](https://user-images.githubusercontent.com/71306738/208868975-e19e6a84-6c9b-406e-86b4-112e320683b6.png)
+
+
+Here we are passing Slope to be `1` and Base Fee to be `100000000000000000` which is `0.1 ETH` or `0.1 MATIC` because 1 MATIC = 10^18
+
+Click on deploy , sign the transaction in your metamask pop up and you will have a screen like this .
+
+![image](https://user-images.githubusercontent.com/71306738/208869670-b0f85b8d-1946-42d1-9fdc-a150e777f453.png)
+
+Copy the deployment address somewhere , it will be used in future <br/>
+
+
+
+#### End of smart contract section
+
 This is a wrap for our smart contract.
 
 #### Appreciation
@@ -326,7 +359,980 @@ So you are a gem 💖
 No , time to move forward.
 
 
+### FrontEnd Design
 
+Time to open your project folder containing the next js app we have made at the first place. <br/>
+
+in the `pages` directory , open _app.js file and paste folllowing in it .
+
+`javascript
+
+import { ChakraProvider } from "@chakra-ui/react";
+export default function MyApp({ Component, pageProps }) {
+  return (
+    <ChakraProvider>
+      <Component {...pageProps} />
+    </ChakraProvider>
+  );
+}
+
+`
+
+having a look at the code you just pasted , you will know that we are using something called Chakra UI.
+
+So what chakra UI is ?
+
+Read in their own words :
+
+`"Chakra UI is a simple, modular and accessible component library that gives you the building blocks you need to build your React applications."`
+
+You can visit [Detailed Documentation of Chakra UI](https://chakra-ui.com/getting-started)
+
+Read a bit how chakra ui worrks and then come back to the tutorial.
+
+
+#### Chakra UI Installation
+In your terminal , paste this and hit enter:
+
+`npm i @chakra-ui/react @emotion/react @emotion/styled framer-motion`
+
+Create a new folder in the root of your Next JS app named `components`
+
+Now , open your `components` directory and Make Following Empty Files
+
+`Navbar.js`
+
+`NavbarItem.js`
+
+`Portal.js`
+
+`SmartContract.js `
+
+
+And here we start pasting stuff ( due to time constraints issues ) <br/>
+
+Open `Navbar.js` and paste following code in it.
+
+
+```javascript
+
+import { Center, Img, Box, HStack } from "@chakra-ui/react";
+import React from "react";
+import NavbarItem from "./NavbarItem";
+function Navbar() {
+  return (
+    <Center>
+      <HStack
+        as="div"
+        borderRadius={"20px"}
+        bg={"black"}
+        color={"white"}
+        marginTop={"10vh"}
+        width={"300px"}
+        height={"60px"}
+        padding={"10px"}
+      >
+        <Img
+          borderRadius={"50%"}
+          width={"40px"}
+          src="https://thumbs.dreamstime.com/b/chain-icon-vector-sign-symbol-isolated-white-background-chain-logo-concept-chain-icon-vector-isolated-white-background-133731775.jpg"
+        />
+        <HStack
+          justify={"space-between"}
+          bg={"black"}
+          padding={"10px"}
+          borderRadius={"20px"}
+          width={"100%"}
+        >
+          <NavbarItem link={"#"} title={"Buy"} />
+          <NavbarItem link={"#"} title={"Sell"} />
+          <NavbarItem link={"#"} title={"About Us"} />
+        </HStack>
+      </HStack>
+    </Center>
+  );
+}
+
+export default Navbar;
+
+```
+
+if is just a simple Navbar component with a company logo and 3 dummy links , nothing special.
+
+Note that it is using `NavbarItem` component so paste following data in that file 
+
+```javascript
+
+import { Box, Link } from "@chakra-ui/react";
+import React from "react";
+
+function NavbarItem({ link, title }) {
+  return (
+    <Box color={"white"}>
+      <Link href={link}>{title}</Link>
+    </Box>
+  );
+}
+
+export default NavbarItem;
+
+```
+
+
+Open `Portal.js` and write following code in it
+
+```javascript
+
+import {
+  Box,
+  Button,
+  Center,
+  Heading,
+  HStack,
+  Img,
+  Stack,
+  Text,
+  VStack,
+  Alert,
+  AlertIcon,
+  Fade,
+  ScaleFade,
+  Slide,
+  SlideFade,
+} from "@chakra-ui/react";
+
+import Head from "next/head";
+import React, { useState, useEffect, useRef } from "react";
+import { ethers } from "ethers";
+import { contractAddress, abi } from "../components/SmartContract";
+import { parseEther } from "ethers/lib/utils";
+import { createCipheriv, sign } from "crypto";
+
+async function getFeesForMumbai() {
+  // get max fees from gas station
+  let maxFeePerGas = ethers.BigNumber.from(40000000000); // fallback to 40 gwei
+  let maxPriorityFeePerGas = ethers.BigNumber.from(40000000000); // fallback to 40 gwei
+  try {
+    const { data } = await axios({
+      method: "get",
+      url: "https://gasstation-mumbai.matic.today/v2",
+    });
+    const marginalFee = ethers.BigNumber.from(40000000000);
+    maxFeePerGas = ethers.utils.parseUnits(
+      Math.ceil(data.fast.maxFee) + marginalFee + "",
+      "gwei"
+    );
+    maxPriorityFeePerGas = ethers.utils.parseUnits(
+      Math.ceil(data.fast.maxPriorityFee) + marginalFee + "",
+      "gwei"
+    );
+  } catch {
+    // ignore
+  }
+
+  return {
+    maxFeePerGas,
+    maxPriorityFeePerGas,
+  };
+}
+
+async function connectWallet() {
+  let ethProvider = await window.ethereum;
+  if (ethProvider) {
+    try {
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      return signer;
+    } catch (error) {
+      console.log(error);
+    }
+  } else {
+    return 1;
+  }
+}
+
+async function getContract(setter) {
+  let signer = await connectWallet();
+  if (!signer) return;
+  let contract = new ethers.Contract(contractAddress, abi, signer);
+  if (setter) setter(contract);
+  return contract;
+}
+function Portal() {
+  const [currentTokenPrice, setCurrentTokenPrice] = useState(null);
+  const [balance, setBalance] = useState(null);
+  const [connectedAddress, setConnectAddress] = useState(null);
+  const [contract, setContract] = useState(null);
+  const contractAllowance = useRef(0);
+  const [alertUser, setAlertUser] = useState(null);
+
+  async function getTokenPrice() {
+    if (!contract) {
+      await getContract(setContract);
+      return null;
+    }
+    try {
+      let Price = await contract.getTokenPrice();
+      Price = parseFloat(Price / parseEther("1"), 3).toString();
+      setCurrentTokenPrice(Price);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+  async function updateBalance() {
+    if (!contract) {
+      await getContract(setContract);
+      return null;
+    }
+    try {
+      let balance = await contract.balanceOf(connectedAddress);
+      balance = parseInt(balance);
+      setBalance(balance);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async function getContractAllowance() {
+    if (!contract) {
+      await getContract(setContract);
+      return null;
+    }
+    try {
+      let allowance = await contract.allowance(
+        connectedAddress,
+        contractAddress
+      );
+      contractAllowance.current = parseInt(allowance);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async function ApprovePlatform() {
+    setAlertUser({
+      type: "info",
+      message: "Allowing Smart contract to trade the Tokens !",
+    });
+    if (!contract) {
+      await getContract(setContract);
+      return null;
+    }
+    console.log("approve");
+    let feeObject = await getFeesForMumbai();
+    let tx = await contract.approve(contractAddress, 1, feeObject);
+    console.log({ tx });
+    setAlertUser({
+      type: "warning",
+      message: "Approving Platform, Just a second :) ",
+    });
+    contractAllowance.current = 1;
+    setAlertUser({
+        type: "success",
+        message: "Platform has been guarenteed the access ! 🎉\nSell after 3 seconds",
+      });
+    vanishAlert();
+    
+  }
+
+  async function handleBuy() {
+    if (!contract) {
+      await getContract(setContract);
+      return null;
+    }
+
+    try {
+      setAlertUser({
+        type: "info",
+        message: "Please sign the Transaction!",
+      });
+
+      let feeObject = await getFeesForMumbai();
+
+      let response = await contract.buyToken({
+        value: ethers.utils.parseEther(currentTokenPrice.toString()),
+        maxFeePerGas: feeObject.maxFeePerGas,
+        maxPriorityFeePerGas: feeObject.maxPriorityFeePerGas,
+      });
+      setAlertUser({
+        type: "info",
+        message: "Waiting for Blockchain confirmation for your ownership",
+      });
+
+      await response.wait();
+      await getTokenPrice();
+      await updateBalance();
+
+      setAlertUser({
+        type: "success",
+        message: "Token Purchased Successfully 🎉",
+      });
+      vanishAlert();
+    } catch (e) {
+      console.log(e);
+      setAlertUser({
+        type: "error",
+        message: "Transaction Un-Successful :/ ",
+      });
+      vanishAlert();
+    }
+  }
+  async function handleSell() {
+    if (!contract) {
+      await getContract(setContract);
+      return null;
+    }
+
+    try {
+      console.log({contractAllowance});
+      if (contractAllowance.current === 0) {
+        setAlertUser({
+          type: "warning",
+          message: "Allow Platform to trade your tokens first!",
+        });
+        await ApprovePlatform();
+        vanishAlert();
+        return null;
+      }
+      setAlertUser({
+        type: "warning",
+        message: "Please sign the transaction !",
+      });
+
+      let feeObject = await getFeesForMumbai();
+
+      let response = await contract.sellToken({
+        value: ethers.utils.parseEther("0"),
+        maxFeePerGas: feeObject.maxFeePerGas,
+        maxPriorityFeePerGas: feeObject.maxPriorityFeePerGas,
+      });
+      setAlertUser({
+        type: "info",
+        message: "Waiting for transaction completion!",
+      });
+
+      await response.wait();
+      await getTokenPrice();
+      await updateBalance();
+      setAlertUser({
+        type: "success",
+        message: "Token Sold Successfully 🎉",
+      });
+      vanishAlert();
+    } catch (e) {
+      console.log(e);
+      setAlertUser({
+        type: "error",
+        message: "Transaction Un-Successful :/",
+      });
+    }
+  }
+
+  async function vanishAlert() {
+    setTimeout(() => {
+      setAlertUser(null);
+    }, 3000);
+  }
+  async function connect() {
+    let signer = await connectWallet();
+    if (signer == 1) {
+      alert("Please install metamask");
+    } else {
+      if (!signer) return;
+      let adr = await signer.getAddress();
+      setConnectAddress(adr);
+    }
+  }
+
+  useEffect(() => {
+    if (!connectedAddress) {
+      connect();
+    } else {
+      try {
+        getContract(setContract);
+        updateBalance();
+        getTokenPrice();
+        getContractAllowance();
+      } catch (e) {
+        console.log(e);
+      }
+    }
+  }, [connectedAddress, contract]);
+
+  return (
+    <Center>
+      {!connectedAddress ? (
+        <VStack height={"50vh"} justify={"center"}>
+          <Button colorScheme={"blue"} onClick={connect}>
+            Connect wallet
+          </Button>
+        </VStack>
+      ) : (
+        <Box
+          boxShadow={"2px 2px 2px 2px black"}
+          bg={"black"}
+          color={"white"}
+          padding={"10vw"}
+          marginTop={"20px"}
+          marginBottom={"10vh"}
+          borderRadius={"20px"}
+        >
+          <VStack spacing={10}>
+            <Center>
+              <VStack>
+                <Heading>Slope Leverage</Heading>
+                <VStack align={"left"}>
+                  <Text>Buy SLPLEV Tokens Early</Text>
+                  <Text>Sell at high prices</Text>
+                </VStack>
+              </VStack>
+            </Center>
+            <Stack direction={["column", "column", "row"]} spacing={5}>
+              <Button colorScheme={"cyan"}>
+                Balance : {balance != null ? balance : "Fetching.."}
+              </Button>
+              <Button colorScheme={"telegram"}>
+                <Text>Latest Price : </Text>
+                <Text marginLeft={2}>
+                  {" "}
+                  {currentTokenPrice ? currentTokenPrice : "Fetching.."}{" "}
+                </Text>
+                <Img
+                  marginLeft={2}
+                  width={4}
+                  src={
+                    "https://s3.coinmarketcap.com/static/img/portraits/628f8aa5cf1b0f58d5151191.png"
+                  }
+                />
+              </Button>
+            </Stack>
+            <Center>
+              <Stack direction={["column", "column", "row"]} spacing={5}>
+                <Button colorScheme={"green"} onClick={handleBuy}>
+                  Buy Token
+                </Button>
+                <Button
+                  colorScheme={"gray"}
+                  color={"black"}
+                  onClick={handleSell}
+                >
+                  Sell Token
+                </Button>
+              </Stack>
+            </Center>
+          </VStack>
+        </Box>
+      )}
+
+      {alertUser && (
+        <Fade in={alertUser != null}>
+          <Box position={"absolute"} top={"0"} right={"0"}>
+            <Alert status={alertUser.type} variant="solid">
+              <AlertIcon />
+              {alertUser.message}
+            </Alert>
+          </Box>
+        </Fade>
+      )}
+    </Center>
+  );
+}
+
+export default Portal;
+
+```
+This is where the magic happens. I will try to briefly elaborate each piece of code. <br/>
+If things are unclear still , shoot me in the DMs.
+
+
+
+```javascript
+
+import {
+  Box,
+  Button,
+  Center,
+  Heading,
+  HStack,
+  Img,
+  Stack,
+  Text,
+  VStack,
+  Alert,
+  AlertIcon,
+  Fade,
+  ScaleFade,
+  Slide,
+  SlideFade,
+} from "@chakra-ui/react";
+
+import Head from "next/head";
+import React, { useState, useEffect, useRef } from "react";
+
+```
+
+importing multiple things , nothing really special.
+
+
+
+```javascript
+
+import { ethers } from "ethers";
+import { contractAddress, abi } from "../components/SmartContract";
+import { parseEther } from "ethers/lib/utils";
+```
+Note here we are importing ethers js library for interacting with our smart contract but we have not installed it. <br/>
+
+Let's install by typing following in terminal and hitting enter
+
+```javascript 
+npm i ethers
+```
+
+On second line , we are importing the deployed smart contract address from `SmartContract.js` file .
+
+Before moving forward , open `SmartContract.js` file and paste following data :
+
+
+```
+javascript
+
+export const abi = [
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_slope",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_baseFee",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "spender",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
+    ],
+    name: "Approval",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
+    ],
+    name: "Transfer",
+    type: "event",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "spender",
+        type: "address",
+      },
+    ],
+    name: "allowance",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "spender",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "approve",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "balanceOf",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "baseFee",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "burn",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "burnFrom",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "buyToken",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "decimals",
+    outputs: [
+      {
+        internalType: "uint8",
+        name: "",
+        type: "uint8",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "spender",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "subtractedValue",
+        type: "uint256",
+      },
+    ],
+    name: "decreaseAllowance",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getTokenPrice",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "spender",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "addedValue",
+        type: "uint256",
+      },
+    ],
+    name: "increaseAllowance",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "name",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "owner",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "sellToken",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "slope",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "symbol",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "tokenNumber",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "totalSupply",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "transfer",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "transferFrom",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+];
+
+export const contractAddress = "YOUR Deployed smart contract address";
+
+
+```
+
+see in the last line , we are inserting the deployed smart contract address.<br/> 
+( paste the one you have copied while deployment of smart contract)
+
+The variable will look something like this :
+
+
+```javascript
+export const contractAddress = "0xEe165A4a792d2b9CC9b0C104a7621f490d2D1EbD";
+```
+
+but with your address in it.
+
+
+
+Now Let's keep moving , we are almost there.
+
+
+
+
+```javascript
+
+```
+
+
+
+
+```javascript
+
+```
 
 
 
