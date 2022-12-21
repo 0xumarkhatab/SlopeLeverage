@@ -1488,9 +1488,12 @@ If everything is working , Congratulations 🎉🎊🥳
 
 You made it.
 
-Share it on LinkedIn or Twitter and tag me too as @umarkhatab465.
+Share it on LinkedIn or Twitter and tag me too as @umarkhatab465. <br/>
 
+![mionion2](https://user-images.githubusercontent.com/71306738/208883824-2faeef26-ed56-4176-a921-869b1c8e6aad.gif)
 
+##
+##
 If things are not going good , ask me on social media directly either on LinkedIn or Twitter.
 
 DMs are all yours.
@@ -1504,8 +1507,10 @@ Thank you so much for reading my tutorial.
 It took a lot of effort to make this but if it has added even a little bit of value to your life, I'm happy!
 
 Thank you :)
+##
+![minion1](https://user-images.githubusercontent.com/71306738/208883855-ec79fadf-36dd-49ab-beda-258053a1b714.gif)
 
-
+##
 
 ## My Dapp Deployment Address
 
