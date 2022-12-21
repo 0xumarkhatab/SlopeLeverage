@@ -2,14 +2,14 @@
 ![image](https://user-images.githubusercontent.com/71306738/208593841-45f03820-1441-4245-8d72-3002a0ed57a8.png)
 
 ## Purpose 
-A DeFi platform that uses Linear Bonding curve at it's core to buy and sell tokens.
-Essentially a Dcentralized Trading platform ( Mini Version ).
+A DeFi platform that uses a Linear Bonding curve at its core to buy and sell tokens.
+Essentially a Decentralized Trading platform ( Mini Version ).
 
-## How It Works ( Big Picture )?
-The person who buys tokens first and holds it for some time , can sell it at higher prices.
+## How Does It Works ( Big Picture )?
+The person who buys tokens first and holds them for some time can sell them at higher prices.
 
-After each Purchase , the token price `increases` by 1 MATIC.
-After each Sell , the token price `drops` by 1 MATIC.
+After each purchase, the token price `increases` by 1 MATIC.
+After each Sell, the token price `drops` by 1 MATIC.
 So you have to be a clever player.
 
 ## DeFi concepts that you will learn
@@ -21,18 +21,18 @@ So you have to be a clever player.
     ✔ Holding Strategies
 
 ## Tech Stack
-This is a Fullstack Dapp that utilizes following stack
+This is a Fullstack Dapp that utilizes the following stack
 
     ✅ Next JS     - As a frontend development framework
     ✅ Chakra UI   - A Library for premade frontend components and styling
     ✅ Remix IDE   - An Online compiler for compiling and deploying our Smart contract
     ✅ Solidity    - The language for writing our smart contract
     ✅ Polygon     - The fastest and cheapest EVM blockchain to build upon.
-    ✅ Metamask    - Our crypto wallet for Purchase and Selling of our tokens.
+    ✅ Metamask    - Our crypto wallet for the Purchase and Selling of our tokens.
     
 
 ## Tutorial ( How to make one ? )
-This tutorial will guide you how to build a Slope Leverage app by yourself.
+This tutorial will guide you on how to build a Slope Leverage app by yourself.
 
 ## Pre-requisite
 
@@ -41,25 +41,25 @@ This tutorial will guide you how to build a Slope Leverage app by yourself.
 -   Install Node JS
 -   Basic understanding of how a React or Next JS work
 
-With all set , let's start it up.
+With all set, let's start it up.
 
 ### Creating a Next App
 
-First of all We need a `Next Js app` in which we will do everything at our own !
+First of all, We need a `Next Js app` in which we will do everything on our own!
 so 
 
         Create a new folder
-        Open that in VScode
+        Open that in vscode
         Open your terminal by pressing ``` CTRL + ` ``` on your keyboard
         write "npx create-next-app slope_leverage" in the terminal
-        Allow ( tap "y" ) for every step except installing Typescript , we will just be working in javascript.
+        Allow ( tap "y" ) for every step except installing Typescript, we will just be working in javascript.
         Let everything install.
         Test the demo app by writing ` npm run dev ` in the terminal.
         Visit localhost:3000 and you can see the demo app running.
-        Congratulations for setting up the app 🎉
+        Congratulations on setting up the app 🎉
         
 #### Cleaning the app
-In the the `pages` directory , open `index.js` file and remove everything in the body of Home after return statement. <br/>
+In the `pages` directory, open the `index.js` file and remove everything in the body of Home after the return statement. <br/>
 So your `index.js` will look something like this 
 
 
@@ -75,7 +75,7 @@ export default function Home() {
 
 ```
 
-Now Let's write a heading of our favourite starter `hello world` as 
+Now Let's write a heading of our favorite starter `hello world` as 
 
 ```javascript
 <h1>Hello World</h1> 
@@ -83,17 +83,17 @@ Now Let's write a heading of our favourite starter `hello world` as
 ```
 
 Navigate to localhost:3000 and see if you can see the Hello world. <br/>
-If you can , great , you have completed the second step and we will move forward 
+If you can, great, you have completed the second step and we will move forward 
 
 ### Smart contract Creation
-So , now pause the frontend development here and let's create a smart contract for our platform first.
+So, now pause the frontend development here, and let's create a smart contract for our platform first.
 
 #### Pre-requisite
         
 1. Metamask installed <br/>
 2. Polygon mumbai testnet is configured on metamask <br/>
 ( if you have not configured it yet,  Visit [this Article](https://medium.com/stakingbits/how-to-connect-polygon-mumbai-testnet-to-metamask-fc3487a3871f))
-3. Get some test matic from the faucet [here](https://faucet.polygon.technology/) , it will give you half of a matic .
+3. Get some test Matic from the faucet [here](https://faucet.polygon.technology/), it will give you half of a matic .
 4. These MATIC are not sufficient for our project , you can ask some friend or your brother Umar Khatab for it. <br/> Right now i have 10 , tag me on twitter or linked as `@umarkhatab465` and i will transfer you some MATIC.
 5. Transfer my matic back after testing
 
@@ -168,9 +168,9 @@ For Understanding these variables , let's understand the important concept of `L
 ### Linear Bonding Curve
 ![Linear Bonding Curve](https://miro.medium.com/max/1200/0*O0yrtS3ZuLr6HrTY)
 
-This image illustrates the process by which the price of tokens increase as more tokens are created.
+This image illustrates the process by which the price of tokens increases as more tokens are created.
 
-So essentially , we are using a simple Slope formula here ( recall calculus for straight lines if you have studied before) <br/>
+So essentially, we are using a simple Slope formula here ( recall calculus for straight lines if you have studied before) <br/>
 
 The formula is here
 
@@ -179,44 +179,44 @@ y=mx+b
 
 ```
 
-where `x` is the Number of tokens created , `m` is the slope whose value for the linear curve is `1` and `b` is the base fee for the token.
+where `x` is the Number of tokens created, `m` is the slope whose value for the linear curve is `1` and `b` is the base fee for the token.
 
 So the equation becomes something like this
 
 New_Token_Price = Slope * Tokens_Created + Base_Fee;
 
 #### Heading into mathematical calculations
-let's say the price of token is 1 Ethereum at first, slope being `1` and initially the tokens created are `0` so
+let's say the price of a token is 1 Ethereum at first, the slope being `1`, and initially the tokens created are `0` so
 
 `Base_FEE = 1 ETH`,
 `Slope=1`,
 `Tokens_Created=0`
-Then the price for first token is
+Then the price for the first token is
 
 price = 1*0+1 ETH = 1 ETH.
 
-Then the price for second token is
+Then the price for the second token is
 
 price = 1*1+1 ETH = 2 ETH.
 
-Then the price for third token is
+Then the price for the third token is
 
 price = 1*2+1 ETH = 3 ETH.
 
 Let's say Seemal buys 5 tokens at first paying 1+2+3+4+5=15 ETH to the smart contract
 
-Raida comes in and buys 5 tokens too but the price has reached to 6 ETH now ( remember from the formula). <br/>
-She will be paying 6+7+8+9+10 = 40 ETH .
+Raida comes in and buys 5 tokens too but the price has reached 6 ETH now ( remember from the formula). <br/>
+She will be paying 6+7+8+9+10 = 40 ETH.
 
-Notice the price variation for both of the buyers, same amount of tokens but who comes first , buys cheap . <br/>
+Notice the price variation for both of the buyers, the same amount of tokens but who comes first buys cheap. <br/>
 
 
-But here comes the interesting part , if Seemal wants to sell her 5 tokens , she will earn more . <br/>
+But here comes the interesting part, if Seemal wants to sell her 5 tokens , she will earn more . <br/>
 
 How ?
-Total tokens right now are 10 and starting from 0 , the tokens generated are 9 (0 to 9 are 10).
+The total tokens right now are 10 and starting from 0 , the tokens generated are 9 (0 to 9 are 10).
 
-See , first token will be sold at `price = 1*9+1 ETH = 10 ETH`  and this token will be burned means vanish from blockchain like it has not ever created even.<br/>
+See , the first token will be sold at `price = 1*9+1 ETH = 10 ETH`  and this token will be burned means vanish from blockchain like it has not ever created even.<br/>
 
 Second token will be sold at `price = 1*8+1 ETH = 9 ETH`  and this token will be burned too .
 
@@ -224,7 +224,7 @@ Third token ar 8 , fourth at 7 and fifth token at 6 ETH .
 
 So essentially Seemal will sell these tokens for 10+9+8+7+6 = 40 ETH 😲 but she bought it for just 15 ETH <br/>
 
-She will earn the profit of 40-15 = 25 ETH which is huge.
+She will earn the profit of 40-15 = 25 huge ETH.
 
 This is how our app works.
 
@@ -240,7 +240,7 @@ uint256 public slope;
     uint256 public tokenNumber;
     address public owner;
 ```
-These variables are self explanatory after the explanation of the Bonding Curve Algorithm. <br/>
+These variables are self-explanatory after the explanation of the Bonding Curve Algorithm. <br/>
 
 
 ```solidity
@@ -279,7 +279,7 @@ This function returns the calculated latest price of the token using the linear 
     }
 
 ```
-In order to buy a token, the user has to pay some money <br/>
+To buy a token, the user has to pay some money <br/>
 that is equal to the latest price of the token calculated by  `getTokenPrice` method. 
 
 If sufficient funds are sent to the contract , the token is minted to the user.
@@ -309,9 +309,9 @@ This method checks if the user have at least one token to sell. <br/>
 Decrement the number of tokens because this token will be burnt.
 
 
-For selling token , the contract has to be approved by the owner of the token ( we will see in frontend integration) <br/>
+For selling token , the contract has to be approved by the owner of the token ( we will see this in frontend integration) <br/>
 So, when the contract burns the token , it's allowance should be reduced .<br/>
-That's what `_spendAllowance` function does.
+That's what the `_spendAllowance` function does.
 
 
 Then we do burn the token and send the payment to the user / owner of the token.
@@ -353,17 +353,17 @@ This is a wrap for our smart contract.
 
 #### Appreciation
 Before moving further , give a tap on your back that you have made this far. <br/>
-Only 10% of the people will reach to this stage.<br/>
+Only 10% of the people will reach this stage.<br/>
 So you are a gem 💖
 
-No , time to move forward.
+No, time to move forward.
 
 
 ### FrontEnd Design
 
-Time to open your project folder containing the next js app we have made at the first place. <br/>
+Time to open your project folder containing the next js app we made in the first place. <br/>
 
-in the `pages` directory , open _app.js file and paste folllowing in it .
+in the `pages` directory , open _app.js file and paste the following in it.
 
 `javascript
 
@@ -378,7 +378,7 @@ export default function MyApp({ Component, pageProps }) {
 
 `
 
-having a look at the code you just pasted , you will know that we are using something called Chakra UI.
+having a look at the code you just pasted, you will know that we are using something called Chakra UI.
 
 So what chakra UI is ?
 
@@ -388,7 +388,7 @@ Read in their own words :
 
 You can visit [Detailed Documentation of Chakra UI](https://chakra-ui.com/getting-started)
 
-Read a bit how chakra ui worrks and then come back to the tutorial.
+Read a bit about how chakra ui works and then come back to the tutorial.
 
 
 #### Chakra UI Installation
@@ -398,7 +398,7 @@ In your terminal , paste this and hit enter:
 
 Create a new folder in the root of your Next JS app named `components`
 
-Now , open your `components` directory and Make Following Empty Files
+Now, open your `components` directory and Make the Following Empty Files
 
 `Navbar.js`
 
@@ -411,7 +411,7 @@ Now , open your `components` directory and Make Following Empty Files
 
 And here we start pasting stuff ( due to time constraints issues ) <br/>
 
-Open `Navbar.js` and paste following code in it.
+Open `Navbar.js` and paste the following code in it.
 
 
 ```javascript
@@ -457,9 +457,9 @@ export default Navbar;
 
 ```
 
-if is just a simple Navbar component with a company logo and 3 dummy links , nothing special.
+it is just a simple Navbar component with a company logo and 3 dummy links, nothing special.
 
-Note that it is using `NavbarItem` component so paste following data in that file 
+Note that it is using `NavbarItem` component so paste the following data in that file 
 
 ```javascript
 
@@ -479,7 +479,7 @@ export default NavbarItem;
 ```
 
 
-Open `Portal.js` and write following code in it
+Open `Portal.js` and write the following code in it
 
 ```javascript
 
@@ -844,8 +844,8 @@ function Portal() {
 export default Portal;
 
 ```
-This is where the magic happens. I will try to briefly elaborate each piece of code. <br/>
-If things are unclear still , shoot me in the DMs.
+This is where the magic happens. I will try to briefly elaborate on each piece of code. <br/>
+If things are unclear still, shoot me in the DMs.
 
 
 
@@ -874,7 +874,7 @@ import React, { useState, useEffect, useRef } from "react";
 
 ```
 
-importing multiple things , nothing really special.
+importing multiple things, nothing really special.
 
 
 
@@ -886,7 +886,7 @@ import { parseEther } from "ethers/lib/utils";
 ```
 Note here we are importing ethers js library for interacting with our smart contract but we have not installed it. <br/>
 
-Let's install by typing following in terminal and hitting enter
+Let's install by typing the following in the terminal and hitting enter
 
 ```javascript 
 npm i ethers
@@ -894,7 +894,7 @@ npm i ethers
 
 On second line , we are importing the deployed smart contract address from `SmartContract.js` file .
 
-Before moving forward , open `SmartContract.js` file and paste following data :
+Before moving forward, open `SmartContract.js` file and paste the following data :
 
 
 ```
@@ -1324,18 +1324,189 @@ Now Let's keep moving , we are almost there.
 
 
 ```javascript
-
+async function getFeesForMumbai() {
+  ...
+}
 ```
+
+This function gives us the estimated transaction gas fees for sending a certain transaction on the Mumbai Testnet of Polygon Chain. <br/>
+
+
+```javascript
+async function connectWallet() {
+  let ethProvider = await window.ethereum;
+  if (ethProvider) {
+    try {
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      return signer;
+    } catch (error) {
+      console.log(error);
+    }
+  } else {
+    return 1;
+  }
+}
+```
+
+this function connects the wallet, wraps in an ethers provider and provider signer of the connected account. <br/>
+
+
+
+```javascript
+
+async function getContract(setter) {
+  ...
+}
+```
+
+gives a contract instance to interact with by accepting the ABI and Deployment address of the smart contract. <br/>
 
 
 
 
 ```javascript
 
+  const [currentTokenPrice, setCurrentTokenPrice] = useState(null);
+  const [balance, setBalance] = useState(null);
+  const [connectedAddress, setConnectAddress] = useState(null);
+  const [contract, setContract] = useState(null);
+  const contractAllowance = useRef(0);
+  const [alertUser, setAlertUser] = useState(null);
+```
+We are just initializing some state variables here.
+
+And a reference variable to check if our platform currently has an allowance to spend user's tokens. <br/>
+
+`alertUser` is a special state variable that changes over time <br/>
+and used to show pop-up messages on the user's screen upon different states of Blockchain Transactions.
+
+
+```javascript
+async function getTokenPrice() {
+   ...
+  }
+```
+Gets the latest price of the token from the contract.
+
+
+```javascript
+  async function updateBalance() {
+   ...
+  }
 ```
 
+Checks for how many tokens the connected wallet currently owns. <br/>
 
 
-## Deployment Address
+
+```javascript
+
+  async function getContractAllowance() {
+  ...
+  }
+```
+
+Get the number of tokens the smart contract / our platform is allowed to spend from the connected user's wallet. <br/>
+
+
+
+
+```javascript
+ async function ApprovePlatform() {
+  ...
+  }
+```
+
+For selling the token, the user has to allow the platform to trade his/her tokens. <br/>
+This function does that.
+
+
+```javascript
+
+  async function handleBuy() {
+   ... 
+  }
+```
+Buys the token.
+
+```javascript
+async function handleSell() {
+...
+}
+```
+Sells the token :/
+
+```javascript
+
+  useEffect(() => {
+    if (!connectedAddress) {
+      connect();
+    } else {
+      try {
+        getContract(setContract);
+        updateBalance();
+        getTokenPrice();
+        getContractAllowance();
+      } catch (e) {
+        console.log(e);
+      }
+    }
+  }, [connectedAddress, contract]);
+
+```
+UseEffect gets called when the component renders for the first time. <br/>
+But it is also called when one of the variables in the dependency array changes.
+
+In our case, whenever Wallet is connected , the function gets called.
+
+If the wallet is not connected , it gets it to connect.
+
+If it is connected , it does following
+
+
+1. Gets the contract instance to interact with 
+2. Update the number of tokens the user owns
+3. Get the latest price of the token 
+4. Get the number of tokens the platform is allowed to trade.
+
+
+After that, there is just a simple UI tactics :/.
+
+
+### Running the App
+If until now, you have followed things step by step , you can type `npm run dev` in the terminal and hit enter.
+
+Visit localhost:3000 and you should be able to see
+
+`a working DeFi dapp that is a mini trading platform using Bonding Curve Algorithm`.
+
+If everything is working , Congratulations 🎉🎊🥳
+
+You made it.
+
+Share it on LinkedIn or Twitter and tag me too as @umarkhatab465.
+
+
+If things are not going good , ask me on social media directly either on LinkedIn or Twitter.
+
+DMs are all yours.
+
+
+
+## Final Note
+
+Thank you so much for reading my tutorial.
+
+It took a lot of effort to make this but if it has added even a little bit of value to your life, I'm happy!
+
+Thank you :)
+
+
+
+## My Dapp Deployment Address
 
 https://slope-leverage.vercel.app/
