@@ -132,13 +132,6 @@ But Let's move forward.
 
 ```solidity
 
-
-
-```
-
-
-```solidity
-
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 ```
@@ -237,16 +230,105 @@ This is how our app works.
 
 
 
+### Variables Explanation
 
 
 
+``` solidity
+uint256 public slope;
+    uint256 public baseFee;
+    uint256 public tokenNumber;
+    address public owner;
+```
+These variables are self explanatory after the explanation of the Bonding Curve Algorithm. <br/>
+
+
+```solidity
+
+ constructor(uint256 _slope, uint256 _baseFee)
+        ERC20Burnable()
+        ERC20("SlopeLeverage", "SLPLEV")
+
+```
+
+Here we are initializing our smart contract to become an ERC20 contract with additional functionality of burning tokens. <br/>
 
 
 
+```solidity
+
+ function getTokenPrice() public view returns (uint256) {
+        uint256 tokenPrice = (slope * tokenNumber * 10**18) + baseFee;
+        return tokenPrice;
+    }
 
 
+```
+This function returns the calculated latest price of the token using the linear Bonding curve algorithm.
+
+
+```solidity
+
+ function buyToken() public payable {
+        require(
+            msg.value >= getTokenPrice(),
+            "Insufficient Funds for purchasing token"
+        );
+        _mint(msg.sender, 1);
+        tokenNumber++;
+    }
+
+```
+In order to buy a token, the user has to pay some money <br/>
+that is equal to the latest price of the token calculated by  `getTokenPrice` method. 
+
+If sufficient funds are sent to the contract , the token is minted to the user.
+
+TokenNumber variable is incremented each time someone buys a token <br/>
+for keeping track of how many tokens are created.
+
+
+
+```solidity
+
+
+    function sellToken() public payable {
+        require(balanceOf(msg.sender) > 0, "You do not have tokens to sell");
+        tokenNumber--;
+        uint256 tokenPrice = getTokenPrice();
+        _spendAllowance(msg.sender, address(this), 1);
+        _burn(msg.sender, 1);
+        (bool sent, bytes memory data) = payable(msg.sender).call{
+            value: tokenPrice
+        }("");
+        require(sent, "Failed to send Funds");
+    }
+
+```
+This method checks if the user have at least one token to sell. <br/>
+Decrement the number of tokens because this token will be burnt.
+
+
+For selling token , the contract has to be approved by the owner of the token ( we will see in frontend integration) <br/>
+So, when the contract burns the token , it's allowance should be reduced .<br/>
+That's what `_spendAllowance` function does.
+
+
+Then we do burn the token and send the payment to the user / owner of the token.
         
-        
+This is a wrap for our smart contract.
+
+#### Appreciation
+Before moving further , give a tap on your back that you have made this far. <br/>
+Only 10% of the people will reach to this stage.<br/>
+So you are a gem 💖
+
+No , time to move forward.
+
+
+
+
+
 
 ## Deployment Address
 
